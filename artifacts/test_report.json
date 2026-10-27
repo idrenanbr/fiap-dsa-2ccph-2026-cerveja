@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "testes": [
+    "365 dias válidos",
+    "3 artefatos carregam e predizem",
+    "interface inicia sem exceções",
+    "filtro fim de semana: 104 dias",
+    "filtro chuva",
+    "filtro vazio",
+    "data única",
+    "previsão com cada modelo",
+    "temperaturas inconsistentes rejeitadas"
+  ]
+}
