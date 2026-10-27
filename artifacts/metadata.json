@@ -1,0 +1,40 @@
+{
+  "seed": 42,
+  "winner_validation_rmse": "Ridge",
+  "features": [
+    "Temperatura Media (C)",
+    "Temperatura Minima (C)",
+    "Temperatura Maxima (C)",
+    "Precipitacao (mm)",
+    "Final de Semana"
+  ],
+  "target": "Consumo de cerveja (litros)",
+  "split": {
+    "treino": {
+      "n": 219,
+      "inicio": "2015-01-01",
+      "fim": "2015-08-07"
+    },
+    "validacao": {
+      "n": 73,
+      "inicio": "2015-08-08",
+      "fim": "2015-10-19"
+    },
+    "teste": {
+      "n": 73,
+      "inicio": "2015-10-20",
+      "fim": "2015-12-31"
+    }
+  },
+  "quality": {
+    "linhas_originais": 941,
+    "linhas_vazias_removidas": 576,
+    "linhas_validas": 365,
+    "ausentes": 0,
+    "duplicadas": 0,
+    "sha256_csv": "57a1df4479336ac4a6510fc7cc84f3a37eff88d0bdb915b2f122170401ab3a82"
+  },
+  "warnings": [],
+  "trained_until": "2015-10-19",
+  "note": "Artefatos treinados em treino+validação; teste não usado no ajuste ou escolha."
+}
