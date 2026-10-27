@@ -7,13 +7,13 @@ Integra as três etapas: problema e indicadores (CP1/CP4), modelagem (CP2/CP5) e
 
 Acesso sem autenticação verificado em 27/10/2026.
 
-## O que a aplicação faz
+## O projeto
 
 - Explora 365 observações diárias de 2015, com filtros por período, tipo de dia e chuva.
 - Calcula KPIs e mostra gráficos estáticos e interativos.
 - Compara Ridge, XGBoost e rede neural profunda com três camadas ocultas.
 - Simula consumo com pipelines treinados, sem treinamento ao abrir a página.
-- Explica os dados, as métricas, as limitações da análise.
+- Apresenta os dados, as métricas e os limites da análise.
 
 ## Executar localmente
 
@@ -45,7 +45,7 @@ A automação em `.github/workflows/validar.yml` executa esses testes e os três
 ## Dados e método
 
 Fonte de distribuição: [Beer Consumption – São Paulo, Kaggle](https://www.kaggle.com/datasets/dongeorge/beer-consumption-sao-paulo).
-Consulta documental em 27/10/2026; o arquivo foi recuperado dos materiais anteriores. A data original do download não está registrada.
+A página foi consultada em 27/10/2026. O CSV é o mesmo usado nas etapas anteriores; a data do download original não ficou registrada.
 O conjunto tem sete colunas: data; temperaturas média, mínima e máxima; precipitação; fim de semana; consumo.
 O CSV original tem 941 linhas, das quais 576 totalmente vazias. A análise mantém 365 dias válidos.
 O hash do arquivo está em `artifacts/metadata.json`.
@@ -72,9 +72,8 @@ Para demanda futura, seria preciso usar previsões meteorológicas e medir tamb�
 | `artifacts/` | Pipelines treinados, métricas, previsões e evidências de execução |
 | `data/` | Dataset usado nas três etapas |
 
-Os enunciados originais, a auditoria da entrega anterior e a mensagem ao professor ficam no pacote privado de revisão, fora deste repositório público.
-Nenhum envio no Teams ou ao professor é feito por este projeto.
+Os enunciados e a comparação com a entrega anterior foram preservados nos documentos de revisão. Este repositório contém os arquivos necessários para executar o projeto.
 
-## Identificação da entrega
+## Identificação
 
-Os nomes e RMs completos estão nos notebooks do pacote privado de entrega. A versão pública não divulga esses identificadores.
+Os nomes e RMs do grupo estão na versão de entrega dos notebooks. Eles não são divulgados nesta cópia pública.

@@ -9,9 +9,9 @@ from analysis import ROOT, TARGET, FEATURES, SOURCE, load_data, indicators
 
 st.set_page_config(page_title='Consumo de cerveja | São Paulo',layout='wide')
 st.title('Consumo de cerveja em São Paulo')
-st.caption('FIAP · 2CCPH-2026 · CP3/CP6 · análise histórica e simulação de demanda')
-st.markdown('Fonte: [Beer Consumption – São Paulo]('+SOURCE+'). Dados de 2015; consulta documental em 27/10/2026.')
-st.info('Amostra histórica: associações não demonstram causalidade. Os resultados não representam toda a população paulista. A unidade abaixo segue o rótulo do CSV; a escala física deve ser confirmada com a fonte antes de uso operacional.')
+st.caption('Data Science & Analytics · FIAP 2CCPH-2026 · CP3/CP6')
+st.markdown('Dados diários de 2015, disponíveis no [Kaggle]('+SOURCE+'). Fonte consultada em 27/10/2026.')
+st.info('Explore como o consumo variou com o clima e os dias da semana. Os resultados se referem a esta base de 2015; não representam toda a população de São Paulo.')
 
 @st.cache_data
 def data(): return load_data()
@@ -33,32 +33,32 @@ else:
     st.sidebar.caption('Selecione também a data final.')
 if day!='Todos': filtered=filtered[filtered['Final de Semana'].eq(int(day=='Final de semana'))]
 if rain!='Todos': filtered=filtered[filtered['Precipitacao (mm)'].gt(0).eq(rain=='Com chuva')]
-explore,predict,methods=st.tabs(['Indicadores e exploração','Modelos e simulação','Método'])
+explore,predict,methods=st.tabs(['Dados e indicadores','Previsões','Sobre os dados'])
 with explore:
     if filtered.empty:
-        st.warning('Nenhum registro para esses filtros. Amplie a seleção.')
+        st.warning('Não há dados nesse recorte. Tente ampliar o período ou mudar os filtros.')
     else:
         k=indicators(filtered); cols=st.columns(3)
         cols[0].metric('Dias observados',k['dias'])
         cols[1].metric('Consumo médio · unidade do CSV',f"{k['consumo_medio']:.3f}")
-        cols[2].metric('Diferença fim de semana (%)',f"{k['diferenca_fim_semana_pct']:.1f}" if np.isfinite(k['diferenca_fim_semana_pct']) else 'Não disponível')
-        st.caption('Diferença = (média fim de semana / média dia útil − 1) × 100. Exige os dois grupos no filtro.')
-        st.subheader('Consumo diário · gráfico interativo')
+        cols[2].metric('Variação no fim de semana (%)',f"{k['diferenca_fim_semana_pct']:.1f}" if np.isfinite(k['diferenca_fim_semana_pct']) else 'Não disponível')
+        st.caption('A variação compara o consumo médio dos fins de semana com o dos dias úteis. Para calculá-la, o recorte precisa conter os dois tipos de dia.')
+        st.subheader('Consumo ao longo do período')
         st.line_chart(filtered.set_index('Data')[[TARGET]],x_label='Data',y_label='Unidade do CSV')
-        st.subheader('Temperatura máxima e consumo · gráfico estático')
+        st.subheader('Temperatura máxima e consumo')
         fig,ax=plt.subplots(figsize=(8,3)); ax.scatter(filtered[FEATURES[2]],filtered[TARGET],alpha=.6)
         ax.set(xlabel='Temperatura máxima (°C)',ylabel='Consumo (unidade do CSV)'); st.pyplot(fig); plt.close(fig)
-        st.subheader('Indicadores por condição')
+        st.subheader('Outros indicadores do recorte')
         st.dataframe(pd.DataFrame({'indicador':list(k),'valor':list(k.values())}),hide_index=True)
         st.dataframe(filtered,hide_index=True)
         st.download_button('Baixar dados filtrados',filtered.to_csv(index=False).encode('utf-8'),'dados_filtrados.csv','text/csv')
 with predict:
-    st.subheader('Comparação em dados separados no tempo')
+    st.subheader('Como os modelos se saíram')
     st.dataframe(metrics,hide_index=True)
-    st.caption('MAE e RMSE: menores são melhores. R²: maior é melhor, podendo ser negativo. Unidade dos erros = unidade do consumo no CSV. Os filtros exploratórios não retreinam nem alteram a avaliação.')
-    st.write('Modelo selecionado por RMSE de validação:',meta['winner_validation_rmse'])
+    st.caption('MAE e RMSE mostram o tamanho dos erros: quanto menores, melhor. No R², valores maiores indicam melhor desempenho. Esta comparação usa sempre o mesmo período de teste, independentemente dos filtros da aba de dados.')
+    st.write('Modelo escolhido na validação:',meta['winner_validation_rmse'])
     st.dataframe(pd.read_csv(ROOT/'artifacts/predictions_test.csv'),hide_index=True)
-    st.subheader('Simular cenário diário')
+    st.subheader('Estime o consumo de um dia')
     chosen=st.selectbox('Modelo',['Ridge','XGBoost','Rede profunda'],index=['Ridge','XGBoost','Rede profunda'].index(meta['winner_validation_rmse']))
     with st.form('scenario'):
         inputs={}
@@ -72,14 +72,17 @@ with predict:
         else:
             row=pd.DataFrame([inputs],columns=FEATURES)
             outside=[c for c in FEATURES if inputs[c]<df[c].min() or inputs[c]>df[c].max()]
-            if outside: st.warning('Cenário fora da faixa histórica: '+', '.join(outside)+'. Extrapolação pouco confiável.')
+            if outside: st.warning('Os valores a seguir estão fora da faixa observada na base: '+', '.join(outside)+'. A previsão fica menos confiável nesse caso.')
             p=float(model(chosen).predict(row)[0])
             st.metric('Consumo estimado · unidade do CSV',f'{p:.3f}')
-            if p<0: st.warning('Previsão negativa fisicamente inválida; este cenário não deve orientar decisões.')
-            st.caption('Estimativa pontual, sem intervalo de confiança. Para antecipar demanda, use previsões meteorológicas: a base contém clima observado, e o erro dessas previsões não foi medido aqui.')
+            if p<0: st.warning('O modelo retornou um valor negativo, que não faz sentido para consumo. Não use este resultado para planejar estoque.')
+            st.caption('Este é um valor estimado, sem intervalo de previsão. Para planejar dias futuros, também seria preciso considerar o erro da previsão do tempo.')
 with methods:
-    st.write('Objetivo: apoiar planejamento de estoque na amostra de São Paulo, relacionando clima e calendário à demanda diária.')
-    st.json(quality); st.json(meta)
-    st.markdown('Ridge: referência linear. XGBoost: boosting de árvores. Rede profunda: MLP com três camadas ocultas (64, 32 e 16 neurônios ReLU); features e alvo padronizados apenas com dados de ajuste.')
-    st.markdown('Limites: um ano de dados, sem horários, feriados rotulados, perfil individual ou estabelecimentos identificados. Não é possível concluir comportamento de estudantes, jovens ou causalidade.')
-    st.caption('A identificação completa do grupo consta nos notebooks do pacote de entrega da disciplina.')
+    st.write('Os números mantêm a escala do arquivo original, cuja coluna está rotulada como litros. A escala física precisa ser confirmada com a fonte antes de usar os resultados na operação de um estabelecimento.')
+    st.write('O objetivo é entender a variação do consumo e avaliar se clima e calendário ajudam a estimar a demanda diária.')
+    with st.expander('Qualidade dos dados e detalhes do treinamento'):
+        st.json(quality)
+        st.json(meta)
+    st.markdown('Foram comparados três modelos: Ridge, XGBoost e uma rede neural com três camadas ocultas de 64, 32 e 16 neurônios. A escolha do modelo padrão foi feita na validação, antes de avaliar o teste.')
+    st.markdown('A base cobre apenas um ano. Ela não informa a idade ou o perfil dos consumidores, os horários de consumo nem quais dias eram feriados. As relações encontradas são associações, não demonstrações de causa e efeito.')
+    st.caption('Os nomes e RMs do grupo estão nos notebooks entregues para revisão.')

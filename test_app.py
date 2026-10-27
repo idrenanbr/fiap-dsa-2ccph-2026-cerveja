@@ -23,7 +23,7 @@ assert not at.exception
 assert int(at.metric[0].value)<104
 # Intervalo sem dados após filtro; deve exibir aviso, sem exceção.
 at.sidebar.date_input[0].set_value((df.Data.min().date(),df.Data.min().date())).run()
-assert not at.exception and any('Nenhum registro' in x.value for x in at.warning)
+assert not at.exception and any('Não há dados nesse recorte' in x.value for x in at.warning)
 # Uma data selecionada: app não quebra.
 at.sidebar.date_input[0].set_value((df.Data.min().date(),)).run()
 assert not at.exception
