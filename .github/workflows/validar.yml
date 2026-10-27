@@ -1,0 +1,33 @@
+name: Validar aplicação e notebooks
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      MPLBACKEND: Agg
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - run: python test_app.py
+      - run: python executar_notebooks.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidencias-linux
+          path: |
+            artifacts/test_report.json
+            artifacts/notebook_validation.json
+            artifacts/metrics.csv
+            CP1_corrigido.ipynb
+            CP2_corrigido.ipynb
+            CP3_corrigido.ipynb
