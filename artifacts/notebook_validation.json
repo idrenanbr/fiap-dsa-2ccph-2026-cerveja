@@ -1,0 +1,20 @@
+[
+  {
+    "notebook": "CP1_corrigido.ipynb",
+    "celulas_codigo": 5,
+    "executadas": 5,
+    "erros": 0
+  },
+  {
+    "notebook": "CP2_corrigido.ipynb",
+    "celulas_codigo": 5,
+    "executadas": 5,
+    "erros": 0
+  },
+  {
+    "notebook": "CP3_corrigido.ipynb",
+    "celulas_codigo": 4,
+    "executadas": 4,
+    "erros": 0
+  }
+]
