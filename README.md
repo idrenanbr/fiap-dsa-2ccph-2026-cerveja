@@ -3,13 +3,17 @@
 Projeto da disciplina Data Science & Analytics — FIAP 2CCPH-2026, segundo semestre de 2026.
 Integra as três etapas: problema e indicadores (CP1/CP4), modelagem (CP2/CP5) e dashboard (CP3/CP6).
 
+**[Abrir a aplicação](https://fiap-dsa-2ccph-2026-cerveja.streamlit.app/)** · **[Testes Linux aprovados](https://github.com/idrenanbr/fiap-dsa-2ccph-2026-cerveja/actions/runs/40502139953)**
+
+Acesso sem autenticação verificado em 27/10/2026.
+
 ## O que a aplicação faz
 
 - Explora 365 observações diárias de 2015, com filtros por período, tipo de dia e chuva.
 - Calcula KPIs e mostra gráficos estáticos e interativos.
 - Compara Ridge, XGBoost e rede neural profunda com três camadas ocultas.
 - Simula consumo com pipelines treinados, sem treinamento ao abrir a página.
-- Explica os dados, as métricas, as limitações e a composição do grupo.
+- Explica os dados, as métricas, as limitações da análise.
 
 ## Executar localmente
 
