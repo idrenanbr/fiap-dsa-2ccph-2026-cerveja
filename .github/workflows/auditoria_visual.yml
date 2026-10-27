@@ -1,0 +1,78 @@
+name: Auditoria final Streamlit no navegador e pacote de entrega
+on:
+  push:
+    paths:
+      - '.github/workflows/auditoria_visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MPLBACKEND: Agg
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Instalar dependências de execução e navegador
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pip install playwright
+          python -m playwright install chromium --with-deps
+      - name: Validar Streamlit nativo e notebooks
+        run: |
+          python test_app.py
+          python executar_notebooks.py
+      - name: Iniciar servidor Streamlit real
+        run: |
+          python -m streamlit run app.py --server.headless=true --server.address=127.0.0.1 --server.port=8501 > streamlit_server.log 2>&1 &
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8501/_stcore/health >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat streamlit_server.log
+          exit 1
+      - name: Teste real no Chromium e capturas de tela
+        run: |
+          mkdir -p evidencias
+          python - <<'PY'
+          from playwright.sync_api import sync_playwright
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
+              page = browser.new_page(viewport={'width': 1440, 'height': 900})
+              page.goto('http://127.0.0.1:8501', wait_until='domcontentloaded', timeout=90000)
+              page.get_by_role('heading', name='Consumo de cerveja em São Paulo').wait_for(timeout=90000)
+              page.get_by_text('365', exact=True).first.wait_for(timeout=90000)
+              page.screenshot(path='evidencias/painel_geral.png', full_page=True)
+              page.get_by_role('tab', name='Previsões').click()
+              page.get_by_role('button', name='Estimar consumo').click()
+              page.get_by_text('Consumo estimado', exact=False).first.wait_for(timeout=90000)
+              page.screenshot(path='evidencias/simulador.png', full_page=True)
+              page.get_by_role('tab', name='Sobre os dados').click()
+              page.get_by_text('Os números mantêm a escala', exact=False).first.wait_for(timeout=90000)
+              page.screenshot(path='evidencias/metodologia.png', full_page=True)
+              print('PASS: servidor real + Chromium + três abas + previsão e capturas')
+              browser.close()
+          PY
+      - name: Montar pacote original do repositório
+        if: always()
+        run: |
+          zip -qr pacote_projeto_repositorio.zip . \
+            -x '.git/*' '.github/*' '*/__pycache__/*' '*.pyc' 'evidencias/*' \
+               'pacote_projeto_repositorio.zip'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: projeto-completo-e-evidencias
+          path: |
+            pacote_projeto_repositorio.zip
+            evidencias/*.png
+            streamlit_server.log
+            artifacts/test_report.json
+            artifacts/notebook_validation.json
+          if-no-files-found: warn
